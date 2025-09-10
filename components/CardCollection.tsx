@@ -100,7 +100,6 @@ const getCardImageUrl = (cardName: string, idName?: string) => {
     'Electro Wizard': 'electro-wizard',
     'Fisherman': 'fisherman',
     'Graveyard': 'graveyard',
-    'Ice Wizard': 'ice-wizard',
     'Inferno Dragon': 'inferno-dragon',
     'Lava Hound': 'lava-hound',
     'Lumberjack': 'lumberjack',
