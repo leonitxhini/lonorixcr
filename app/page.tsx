@@ -11,10 +11,41 @@ import { LiveStats } from '@/components/LiveStats';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 
+interface DeckOfTheWeek {
+  name: string;
+  creator: string;
+  description: string;
+  winRate: number;
+  usage: number;
+  trend?: "up" | "down";
+  change?: string;
+  cards: string[];
+}
+
+interface TrendingDeck {
+  name: string;
+  trend: "up" | "down";
+  change: string;
+  winRate: number;
+  usage: number;
+}
+
+interface TopPlayer {
+  rank: number;
+  name: string;
+  tag: string;
+  trophies: number;
+  clan: string;
+  clanTag: string;
+  change: number;
+  arena: string;
+  level: number;
+}
+
 export default function Home() {
-  const [deckOfTheWeek, setDeckOfTheWeek] = useState(null);
-  const [trendingDecks, setTrendingDecks] = useState([]);
-  const [topPlayers, setTopPlayers] = useState([]);
+  const [deckOfTheWeek, setDeckOfTheWeek] = useState<DeckOfTheWeek | null>(null);
+  const [trendingDecks, setTrendingDecks] = useState<TrendingDeck[]>([]);
+  const [topPlayers, setTopPlayers] = useState<TopPlayer[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
