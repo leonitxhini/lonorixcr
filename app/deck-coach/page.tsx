@@ -191,7 +191,7 @@ export default function DeckCoach() {
       id: Date.now().toString(),
       name: deckName,
       cards: [...deck],
-      analysis,
+      analysis: analysis ?? undefined,
       createdAt: new Date(),
       rating: Math.floor(Math.random() * 5) + 1
     };
