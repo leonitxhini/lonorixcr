@@ -145,7 +145,6 @@ const getCardImageUrl = (cardName: string, idName?: string) => {
     'Skeleton Dragons': 'skeleton-dragons',
     'Wall Breakers': 'wall-breakers',
     'Zappies': 'zappies',
-    'Princess': 'princess',
     'Miner': 'miner',
     'Balloon': 'balloon',
     'Lava Hound': 'lava-hound',
