@@ -145,13 +145,6 @@ const getCardImageUrl = (cardName: string, idName?: string) => {
     'Skeleton Dragons': 'skeleton-dragons',
     'Wall Breakers': 'wall-breakers',
     'Zappies': 'zappies',
-    'Miner': 'miner',
-    'Balloon': 'balloon',
-    'Lava Hound': 'lava-hound',
-    'Golem': 'golem',
-    'P.E.K.K.A': 'pekka',
-    'Electro Wizard': 'electro-wizard',
-    'Bandit': 'bandit',
   };
   
   const id = cardNameToId[cardName] || cardName.toLowerCase().replace(/\s+/g, '-');
