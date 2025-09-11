@@ -304,36 +304,113 @@ export default function DeckCoach() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {deck.map((card, index) => (
-                    <div key={index} className="space-y-2">
-                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                        Card {index + 1}
-                      </label>
-                      <div className="flex gap-2">
-                        <Input
-                          placeholder="Enter card name"
-                          value={card}
-                          onChange={(e) => handleCardChange(index, e.target.value)}
-                          list={`cards-${index}`}
-                          className="flex-1"
-                        />
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => fillRandomCard(index)}
-                          className="px-3"
-                          title="Random card"
-                        >
-                          🎲
-                        </Button>
+                  {deck.map((card, index) => {
+                    const getCardImageUrl = (cardName: string) => {
+                      const cardNameToId: Record<string, string> = {
+                        'Cannon': 'cannon',
+                        'Hog Rider': 'hog-rider',
+                        'Fireball': 'fireball',
+                        'Musketeer': 'musketeer',
+                        'Ice Spirit': 'ice-spirit',
+                        'Log': 'the-log',
+                        'Skeletons': 'skeletons',
+                        'Ice Golem': 'ice-golem',
+                        'Giant': 'giant',
+                        'Wizard': 'wizard',
+                        'Mega Minion': 'mega-minion',
+                        'Zap': 'zap',
+                        'Arrows': 'arrows',
+                        'Knight': 'knight',
+                        'Archers': 'archers',
+                        'Goblin Barrel': 'goblin-barrel',
+                        'Princess': 'princess',
+                        'Miner': 'miner',
+                        'Balloon': 'balloon',
+                        'Lava Hound': 'lava-hound',
+                        'Golem': 'golem',
+                        'P.E.K.K.A': 'pekka',
+                        'Electro Wizard': 'electro-wizard',
+                        'Bandit': 'bandit',
+                        'Royal Giant': 'royal-giant',
+                        'Elite Barbarians': 'elite-barbarians',
+                        'Sparky': 'sparky',
+                        'Inferno Dragon': 'inferno-dragon',
+                        'Lumberjack': 'lumberjack',
+                        'Ice Wizard': 'ice-wizard',
+                        'Graveyard': 'graveyard',
+                        'Tornado': 'tornado',
+                        'Clone': 'clone',
+                        'Rage': 'rage',
+                        'Freeze': 'freeze',
+                        'Mirror': 'mirror',
+                        'Poison': 'poison',
+                        'Lightning': 'lightning',
+                        'Night Witch': 'night-witch',
+                        'Baby Dragon': 'baby-dragon',
+                        'Inferno Tower': 'inferno-tower',
+                        'Tesla': 'tesla',
+                        'Bomb Tower': 'bomb-tower',
+                        'X-Bow': 'x-bow',
+                        'Mortar': 'mortar',
+                        'Goblins': 'goblins',
+                        'Minions': 'minions',
+                        'Bats': 'bats',
+                        'Skeleton Army': 'skeleton-army',
+                        'Giant Skeleton': 'giant-skeleton',
+                        'Mega Knight': 'mega-knight',
+                      };
+                      
+                      const id = cardNameToId[cardName] || cardName.toLowerCase().replace(/\s+/g, '-');
+                      return `https://royaleapi.com/static/img/cards-150/${id}.png`;
+                    };
+
+                    return (
+                      <div key={index} className="space-y-2">
+                        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                          Card {index + 1}
+                        </label>
+                        <div className="flex gap-2">
+                          <div className="relative flex-1">
+                            <Input
+                              placeholder="Enter card name"
+                              value={card}
+                              onChange={(e) => handleCardChange(index, e.target.value)}
+                              list={`cards-${index}`}
+                              className="pl-10"
+                            />
+                            {card && (
+                              <div className="absolute left-2 top-1/2 transform -translate-y-1/2 w-6 h-6 rounded overflow-hidden bg-gray-100 dark:bg-gray-800">
+                                <img
+                                  src={getCardImageUrl(card)}
+                                  alt={card}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                    target.parentElement!.innerHTML = '<div class="text-xs flex items-center justify-center h-full">🃏</div>';
+                                  }}
+                                />
+                              </div>
+                            )}
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => fillRandomCard(index)}
+                            className="px-3"
+                            title="Random card"
+                          >
+                            🎲
+                          </Button>
+                        </div>
+                        <datalist id={`cards-${index}`}>
+                          {popularCards.map(cardName => (
+                            <option key={cardName} value={cardName} />
+                          ))}
+                        </datalist>
                       </div>
-                      <datalist id={`cards-${index}`}>
-                        {popularCards.map(cardName => (
-                          <option key={cardName} value={cardName} />
-                        ))}
-                      </datalist>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
