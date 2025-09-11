@@ -38,17 +38,6 @@ interface SavedDeck {
   favorite?: boolean;
 }
 
-interface DeckStats {
-  totalGames: number;
-  winRate: number;
-  averageElixir: number;
-  deckType: string;
-  metaScore: number;
-  synergyScore: number;
-  balanceScore: number;
-}
-
-
 export default function DeckCoach() {
   const [deck, setDeck] = useState<string[]>(Array(8).fill(''));
   const [analysis, setAnalysis] = useState<DeckAnalysis | null>(null);
@@ -60,30 +49,6 @@ export default function DeckCoach() {
   const [activeTab, setActiveTab] = useState('builder');
   const [autoAnalyze, setAutoAnalyze] = useState(false);
   const [analysisDepth, setAnalysisDepth] = useState('standard');
-  
-  // Neue coole Features
-  const [deckStats, setDeckStats] = useState<DeckStats | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [showAdvanced, setShowAdvanced] = useState(false);
-  const [deckRating, setDeckRating] = useState(0);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [analysisProgress, setAnalysisProgress] = useState(0);
-  const [soundEnabled, setSoundEnabled] = useState(true);
-  const [darkMode, setDarkMode] = useState(true);
-  const [compactMode, setCompactMode] = useState(false);
-  const [autoSave, setAutoSave] = useState(true);
-  const [showTutorial, setShowTutorial] = useState(false);
-  const [selectedDeck, setSelectedDeck] = useState<SavedDeck | null>(null);
-  const [deckComparison, setDeckComparison] = useState<SavedDeck[]>([]);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showLiveStats, setShowLiveStats] = useState(false);
-  const [notificationCount, setNotificationCount] = useState(0);
-  const [showDeckPreview, setShowDeckPreview] = useState(true);
-  const [showCardSuggestions, setShowCardSuggestions] = useState(true);
-  const [deckTheme, setDeckTheme] = useState('default');
-  const [showAnimations, setShowAnimations] = useState(true);
 
   const popularCards = [
     'Hog Rider', 'Fireball', 'Musketeer', 'Ice Spirit', 'Cannon', 'Log', 'Skeletons', 'Ice Golem',
@@ -258,1293 +223,373 @@ export default function DeckCoach() {
     return (total / filledCards.length).toFixed(1);
   };
 
-  // Neue coole Funktionen
-  const calculateDeckStats = () => {
-    const filledCards = deck.filter(card => card.trim());
-    if (filledCards.length !== 8) return null;
-    
-    const avgElixir = parseFloat(String(getAverageElixir()));
-    const metaScore = Math.min(100, (avgElixir <= 3.5 ? 90 : avgElixir <= 4.0 ? 80 : 70));
-    const synergyScore = Math.floor(Math.random() * 30) + 70; // Simuliert Synergie-Berechnung
-    const balanceScore = Math.floor(Math.random() * 20) + 80; // Simuliert Balance-Berechnung
-    
-    return {
-      totalGames: Math.floor(Math.random() * 1000) + 100,
-      winRate: Math.floor(Math.random() * 30) + 60,
-      averageElixir: avgElixir,
-      deckType: avgElixir <= 3.5 ? 'Cycle' : avgElixir <= 4.5 ? 'Control' : 'Beatdown',
-      metaScore,
-      synergyScore,
-      balanceScore
-    };
-  };
-
-
-  const shareDeck = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: 'My Clash Royale Deck',
-          text: `Check out my deck: ${deck.filter(c => c.trim()).join(', ')}`,
-          url: window.location.href
-        });
-        toast.success('🎉 Deck shared successfully!');
-      } catch (err) {
-        copyDeck();
-      }
-    } else {
-      copyDeck();
-    }
-  };
-
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen();
-      setIsFullscreen(true);
-    } else {
-      document.exitFullscreen();
-      setIsFullscreen(false);
-    }
-  };
-
-  const playSound = (type: 'success' | 'error' | 'click') => {
-    if (!soundEnabled) return;
-    // Hier könnten echte Sound-Effekte abgespielt werden
-    console.log(`Playing ${type} sound`);
-  };
-
-  useEffect(() => {
-    // Initialize any necessary data
-    console.log('Deck Coach initialized');
-  }, []);
-
-  useEffect(() => {
-    if (deck.filter(c => c.trim()).length === 8) {
-      setDeckStats(calculateDeckStats());
-    }
-  }, [deck]);
-
   return (
-    <div className={`min-h-screen relative overflow-hidden ${compactMode ? 'compact' : ''}`}>
-      {/* Ultra-Modern Background mit Animationen */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-purple-950 to-slate-900">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(147,51,234,0.15),transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_70%,rgba(59,130,246,0.15),transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_10%,rgba(251,191,36,0.1),transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(236,72,153,0.1),transparent_50%)]" />
-      </div>
-
-      {/* Animated Grid mit Partikeln */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `
-            linear-gradient(rgba(59,130,246,0.1) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(59,130,246,0.1) 1px, transparent 1px)
-          `,
-          backgroundSize: '50px 50px'
-        }} />
-        {/* Floating Particles */}
-        {[...Array(15)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1 h-1 bg-purple-400 rounded-full opacity-30"
-            animate={{
-              x: [0, 100, 0],
-              y: [0, -100, 0],
-              opacity: [0.3, 0.8, 0.3],
-            }}
-            transition={{
-              duration: 8 + i * 2,
-              repeat: Infinity,
-              ease: "easeInOut",
-            }}
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-          />
-        ))}
-      </div>
-
-      {/* Top Navigation Bar */}
-      <div className="relative z-20 bg-slate-900/80 backdrop-blur-xl border-b border-purple-500/30">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+      {/* Professional Header */}
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center gap-4">
-              <motion.div
-                whileHover={{ scale: 1.1, rotate: 5 }}
-                className="relative"
-              >
-                <img 
-                  src="/Design ohne Titel (16).png" 
-                  alt="Logo" 
-                  className="h-10 w-10 rounded-full border-2 border-purple-500"
-                />
-                {notificationCount > 0 && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center"
-                  >
-                    {notificationCount > 99 ? '99+' : notificationCount}
-                  </motion.div>
-                )}
-              </motion.div>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                <Brain className="h-6 w-6 text-white" />
+              </div>
               <div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                  Lonorix CR - AI Deck Coach
+                <h1 className="text-xl font-semibold text-slate-900 dark:text-white">
+                  AI Deck Coach
                 </h1>
-                <p className="text-sm text-gray-400">Pro-Level Deck Analysis</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">Professional Deck Analysis</p>
               </div>
             </div>
             
             <div className="flex items-center gap-2">
-              {/* Deck Preview Toggle */}
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                onClick={() => setShowDeckPreview(!showDeckPreview)}
-                className={`${showDeckPreview ? 'bg-purple-500/20 text-purple-400' : 'text-gray-400'} hover:bg-purple-500/20`}
+                onClick={() => setAutoAnalyze(!autoAnalyze)}
+                className={`${autoAnalyze ? 'bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-300' : ''}`}
               >
-                <Eye className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Preview</span>
-              </Button>
-              
-              {/* Card Suggestions Toggle */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowCardSuggestions(!showCardSuggestions)}
-                className={`${showCardSuggestions ? 'bg-blue-500/20 text-blue-400' : 'text-gray-400'} hover:bg-blue-500/20`}
-              >
-                <Lightbulb className="h-4 w-4 mr-2" />
-                <span className="hidden sm:inline">Suggestions</span>
-              </Button>
-              
-              {/* Sound Toggle */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setSoundEnabled(!soundEnabled)}
-                className={`${soundEnabled ? 'text-green-400' : 'text-gray-400'} hover:bg-green-500/20`}
-              >
-                {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
-              </Button>
-              
-              {/* Fullscreen Toggle */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleFullscreen}
-                className="text-gray-400 hover:bg-purple-500/20"
-              >
-                {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
-              </Button>
-              
-              {/* Settings */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowAdvanced(!showAdvanced)}
-                className="text-gray-400 hover:bg-purple-500/20"
-              >
-                <Settings className="h-4 w-4" />
+                <Zap className="h-4 w-4 mr-2" />
+                Auto-Analyze
               </Button>
             </div>
           </div>
         </div>
       </div>
 
-
-      {/* Advanced Settings Panel */}
-      {showAdvanced && (
-        <motion.div
-          initial={{ y: -300, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: -300, opacity: 0 }}
-          className="fixed top-16 right-4 w-80 bg-slate-900/95 backdrop-blur-xl border border-purple-500/30 rounded-lg z-30 p-4"
-        >
-          <h3 className="text-lg font-bold text-white mb-4">Advanced Settings</h3>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Main Content */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-gray-300">Compact Mode</span>
-              <Switch
-                checked={compactMode}
-                onCheckedChange={setCompactMode}
-                className="data-[state=checked]:bg-purple-600"
-              />
-            </div>
+          {/* Left Column - Deck Builder */}
+          <div className="lg:col-span-2 space-y-6">
             
-            <div className="flex items-center justify-between">
-              <span className="text-gray-300">Auto Save</span>
-              <Switch
-                checked={autoSave}
-                onCheckedChange={setAutoSave}
-                className="data-[state=checked]:bg-purple-600"
-              />
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <span className="text-gray-300">Sound Effects</span>
-              <Switch
-                checked={soundEnabled}
-                onCheckedChange={setSoundEnabled}
-                className="data-[state=checked]:bg-purple-600"
-              />
-            </div>
-            
-            <div>
-              <label className="text-gray-300 text-sm">Analysis Depth</label>
-              <Select value={analysisDepth} onValueChange={setAnalysisDepth}>
-                <SelectTrigger className="bg-slate-700 border-slate-600 text-white mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-600">
-                  <SelectItem value="quick">Quick Analysis</SelectItem>
-                  <SelectItem value="standard">Standard</SelectItem>
-                  <SelectItem value="deep">Deep Analysis</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <label className="text-gray-300 text-sm">Deck Theme</label>
-              <Select value={deckTheme} onValueChange={setDeckTheme}>
-                <SelectTrigger className="bg-slate-700 border-slate-600 text-white mt-1">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-600">
-                  <SelectItem value="default">Default</SelectItem>
-                  <SelectItem value="dark">Dark Mode</SelectItem>
-                  <SelectItem value="neon">Neon</SelectItem>
-                  <SelectItem value="royal">Royal</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <span className="text-gray-300">Show Animations</span>
-              <Switch
-                checked={showAnimations}
-                onCheckedChange={setShowAnimations}
-                className="data-[state=checked]:bg-purple-600"
-              />
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <span className="text-gray-300">Deck Preview</span>
-              <Switch
-                checked={showDeckPreview}
-                onCheckedChange={setShowDeckPreview}
-                className="data-[state=checked]:bg-purple-600"
-              />
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <span className="text-gray-300">Card Suggestions</span>
-              <Switch
-                checked={showCardSuggestions}
-                onCheckedChange={setShowCardSuggestions}
-                className="data-[state=checked]:bg-purple-600"
-              />
-            </div>
-          </div>
-        </motion.div>
-      )}
-
-      {/* Tutorial Panel */}
-      {showTutorial && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 20 }}
-          className="fixed bottom-4 right-4 w-80 sm:w-96 bg-slate-900/95 backdrop-blur-xl border border-purple-500/30 rounded-lg z-30 p-4"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <Lightbulb className="h-5 w-5 text-yellow-400" />
-              Quick Tutorial
-            </h3>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowTutorial(false)}
-              className="text-gray-400 hover:text-white"
-            >
-              <XCircle className="h-4 w-4" />
-            </Button>
-          </div>
-          
-          <div className="space-y-3 text-sm text-gray-300">
-            <div className="flex items-start gap-3">
-              <div className="bg-purple-500 rounded-full w-6 h-6 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-0.5">
-                1
-              </div>
-              <div>
-                <p className="font-medium text-white">Build Your Deck</p>
-                <p>Add 8 cards to create your deck. Use the quick-add categories or type card names.</p>
-              </div>
-            </div>
-            
-            <div className="flex items-start gap-3">
-              <div className="bg-purple-500 rounded-full w-6 h-6 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-0.5">
-                2
-              </div>
-              <div>
-                <p className="font-medium text-white">Get AI Analysis</p>
-                <p>Click "Analyze Deck" to get pro-level insights about your deck's strengths and weaknesses.</p>
-              </div>
-            </div>
-            
-            <div className="flex items-start gap-3">
-              <div className="bg-purple-500 rounded-full w-6 h-6 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-0.5">
-                3
-              </div>
-              <div>
-                <p className="font-medium text-white">Save & Share</p>
-                <p>Save your best decks and share them with friends or the community.</p>
-              </div>
-            </div>
-          </div>
-          
-          <div className="mt-4 pt-4 border-t border-slate-600">
-            <div className="flex items-center gap-2 text-xs text-gray-400">
-              <Info className="h-3 w-3" />
-              <span>Pro tip: Enable auto-analyze for instant feedback as you build!</span>
-            </div>
-          </div>
-        </motion.div>
-      )}
-
-      {/* Card Suggestions Panel */}
-      {showCardSuggestions && (
-        <motion.div
-          initial={{ x: 300, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          exit={{ x: 300, opacity: 0 }}
-          className="fixed right-0 top-16 bottom-0 w-80 bg-slate-900/95 backdrop-blur-xl border-l border-blue-500/30 z-30 overflow-y-auto"
-        >
-          <div className="p-4">
-            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-              <Lightbulb className="h-5 w-5 text-blue-400" />
-              Smart Card Suggestions
-            </h3>
-            
-            <div className="space-y-4">
-              <Card className="bg-slate-800/50 border-slate-600">
-                <CardContent className="p-4">
-                  <h4 className="text-white font-medium mb-3">Missing Card Types</h4>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 p-2 bg-red-500/10 rounded border border-red-500/20">
-                      <AlertTriangle className="h-4 w-4 text-red-400" />
-                      <span className="text-sm text-gray-300">No Win Condition</span>
+            {/* Deck Stats */}
+            <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+              <CardContent className="p-6">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                      {deck.filter(c => c.trim()).length}
                     </div>
-                    <div className="flex items-center gap-2 p-2 bg-yellow-500/10 rounded border border-yellow-500/20">
-                      <AlertTriangle className="h-4 w-4 text-yellow-400" />
-                      <span className="text-sm text-gray-300">No Air Defense</span>
-                    </div>
-                    <div className="flex items-center gap-2 p-2 bg-blue-500/10 rounded border border-blue-500/20">
-                      <AlertTriangle className="h-4 w-4 text-blue-400" />
-                      <span className="text-sm text-gray-300">No Spells</span>
-                    </div>
+                    <div className="text-sm text-slate-500 dark:text-slate-400">Cards</div>
                   </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-slate-800/50 border-slate-600">
-                <CardContent className="p-4">
-                  <h4 className="text-white font-medium mb-3">Recommended Cards</h4>
-                  <div className="space-y-2">
-                    {['Hog Rider', 'Fireball', 'Musketeer', 'Ice Spirit'].map((card, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center gap-3 p-2 bg-slate-700/50 rounded hover:bg-slate-600/50 cursor-pointer transition-colors"
-                        onClick={() => {
-                          const emptyIndex = deck.findIndex(c => c.trim() === '');
-                          if (emptyIndex !== -1 && !deck.includes(card)) {
-                            handleCardChange(emptyIndex, card);
-                            toast.success(`Added ${card} to your deck!`);
-                          }
-                        }}
-                      >
-                        <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded flex items-center justify-center text-white text-xs font-bold">
-                          {index + 1}
-                        </div>
-                        <span className="text-sm text-gray-300">{card}</span>
-                        <Badge className="ml-auto bg-green-500/20 text-green-400 border-green-500/30">
-                          +Add
-                        </Badge>
-                      </div>
-                    ))}
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                      {getAverageElixir()}
+                    </div>
+                    <div className="text-sm text-slate-500 dark:text-slate-400">Avg Elixir</div>
                   </div>
-                </CardContent>
-              </Card>
-              
-              <Card className="bg-slate-800/50 border-slate-600">
-                <CardContent className="p-4">
-                  <h4 className="text-white font-medium mb-3">Deck Balance</h4>
-                  <div className="space-y-3">
-                    <div>
-                      <div className="flex justify-between text-sm text-gray-300 mb-1">
-                        <span>Elixir Cost</span>
-                        <span>{getAverageElixir()}</span>
-                      </div>
-                      <Progress value={parseFloat(String(getAverageElixir())) * 10} className="h-2" />
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+                      {deck.filter(c => c.trim()).length === 8 ? '✓' : '✗'}
                     </div>
-                    <div>
-                      <div className="flex justify-between text-sm text-gray-300 mb-1">
-                        <span>Card Types</span>
-                        <span>{deck.filter(c => c.trim()).length}/8</span>
-                      </div>
-                      <Progress value={(deck.filter(c => c.trim()).length / 8) * 100} className="h-2" />
-                    </div>
+                    <div className="text-sm text-slate-500 dark:text-slate-400">Complete</div>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </motion.div>
-      )}
-
-      <div className={`relative z-10 py-6 sm:py-8 px-4 sm:px-6 lg:px-8 ${showCardSuggestions ? 'mr-80' : ''}`}>
-        <div className="max-w-7xl mx-auto">
-          {/* Hero Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-8 sm:mb-12"
-          >
-            <motion.div
-              animate={{ 
-                rotate: [0, 10, -10, 0],
-                scale: [1, 1.05, 1],
-              }}
-              transition={{ 
-                duration: 6, 
-                repeat: Infinity, 
-                ease: "easeInOut" 
-              }}
-              className="inline-block mb-8 relative"
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/30 to-pink-500/30 rounded-full blur-2xl scale-150 -z-10 animate-pulse"></div>
-              <img 
-                src="/Design ohne Titel (16).png" 
-                alt="RoyaleCoach Logo" 
-                className="h-32 w-32 mx-auto drop-shadow-2xl logo-glow logo-hover logo-float relative z-10"
-              />
-            </motion.div>
-            
-            <motion.h1 
-              className="text-6xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3, duration: 0.8 }}
-            >
-              Lonorix CR - AI Deck Coach
-            </motion.h1>
-            
-            <motion.p 
-              className="text-xl md:text-2xl text-gray-300 max-w-4xl mx-auto font-light leading-relaxed"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5, duration: 0.8 }}
-            >
-              Advanced GPT-4 powered deck analysis with{' '}
-              <span className="text-purple-400 font-semibold">pro-level strategic insights</span>
-            </motion.p>
-          </motion.div>
-
-          {/* Deck Stats Dashboard */}
-          {deckStats && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mb-8"
-            >
-              <Card className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-xl border-purple-500/30 shadow-2xl">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-3 text-white">
-                    <BarChart3 className="h-6 w-6 text-purple-400" />
-                    <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                      Deck Performance Analytics
-                    </span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                    <div className="text-center p-4 bg-slate-800/30 rounded-lg border border-slate-600">
-                      <div className="text-2xl font-bold text-blue-400 mb-1">{deckStats.totalGames}</div>
-                      <div className="text-sm text-gray-400">Games Played</div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                      {analysis ? '🧠' : '⏳'}
                     </div>
-                    <div className="text-center p-4 bg-slate-800/30 rounded-lg border border-slate-600">
-                      <div className="text-2xl font-bold text-green-400 mb-1">{deckStats.winRate}%</div>
-                      <div className="text-sm text-gray-400">Win Rate</div>
-                    </div>
-                    <div className="text-center p-4 bg-slate-800/30 rounded-lg border border-slate-600">
-                      <div className="text-2xl font-bold text-purple-400 mb-1">{deckStats.averageElixir}</div>
-                      <div className="text-sm text-gray-400">Avg Elixir</div>
-                    </div>
-                    <div className="text-center p-4 bg-slate-800/30 rounded-lg border border-slate-600">
-                      <div className="text-2xl font-bold text-yellow-400 mb-1">{deckStats.deckType}</div>
-                      <div className="text-sm text-gray-400">Deck Type</div>
-                    </div>
-                    <div className="text-center p-4 bg-slate-800/30 rounded-lg border border-slate-600">
-                      <div className="text-2xl font-bold text-pink-400 mb-1">{deckStats.metaScore}</div>
-                      <div className="text-sm text-gray-400">Meta Score</div>
-                    </div>
-                    <div className="text-center p-4 bg-slate-800/30 rounded-lg border border-slate-600">
-                      <div className="text-2xl font-bold text-cyan-400 mb-1">{deckStats.synergyScore}</div>
-                      <div className="text-sm text-gray-400">Synergy</div>
-                    </div>
+                    <div className="text-sm text-slate-500 dark:text-slate-400">Analysis</div>
                   </div>
-                  
-                  <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                      <div className="flex justify-between text-sm text-gray-300 mb-2">
-                        <span>Meta Relevance</span>
-                        <span>{deckStats.metaScore}%</span>
-                      </div>
-                      <Progress value={deckStats.metaScore} className="h-2" />
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-sm text-gray-300 mb-2">
-                        <span>Card Synergy</span>
-                        <span>{deckStats.synergyScore}%</span>
-                      </div>
-                      <Progress value={deckStats.synergyScore} className="h-2" />
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-sm text-gray-300 mb-2">
-                        <span>Deck Balance</span>
-                        <span>{deckStats.balanceScore}%</span>
-                      </div>
-                      <Progress value={deckStats.balanceScore} className="h-2" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          )}
+                </div>
+              </CardContent>
+            </Card>
 
-          {/* Advanced Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 bg-slate-800/50 border border-slate-600 p-1 h-12 sm:h-14">
-              <TabsTrigger 
-                value="builder" 
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white h-10 sm:h-12 text-sm sm:text-base"
-              >
-                <Target className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Deck Builder</span>
-                <span className="sm:hidden">Builder</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="meta"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white h-10 sm:h-12 text-sm sm:text-base"
-              >
-                <Crown className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Meta Decks</span>
-                <span className="sm:hidden">Meta</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="analysis"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white h-10 sm:h-12 text-sm sm:text-base"
-              >
-                <Brain className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Analysis</span>
-                <span className="sm:hidden">AI</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="saved"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-pink-600 data-[state=active]:text-white h-10 sm:h-12 text-sm sm:text-base"
-              >
-                <Save className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Saved Decks</span>
-                <span className="sm:hidden">Saved</span>
-              </TabsTrigger>
-            </TabsList>
-
-            {/* Deck Builder Tab */}
-            <TabsContent value="builder" className="space-y-8">
-              {/* Deck Builder Controls */}
-              <Card className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-xl border-purple-500/30 shadow-2xl">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-3 text-2xl">
-                      <div className="p-2 rounded-lg bg-gradient-to-br from-purple-500 to-pink-600">
-                        <Target className="h-6 w-6 text-white" />
-                      </div>
-                      <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-                        Advanced Deck Builder
-                      </span>
-                    </CardTitle>
-                    
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center space-x-2">
-                        <Switch
-                          checked={autoAnalyze}
-                          onCheckedChange={setAutoAnalyze}
-                          className="data-[state=checked]:bg-purple-600"
+            {/* Card Input Grid */}
+            <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white">
+                  Deck Builder
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {deck.map((card, index) => (
+                    <div key={index} className="space-y-2">
+                      <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                        Card {index + 1}
+                      </label>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="Enter card name"
+                          value={card}
+                          onChange={(e) => handleCardChange(index, e.target.value)}
+                          list={`cards-${index}`}
+                          className="flex-1"
                         />
-                        <label className="text-sm font-medium text-gray-300">Auto-Analyze</label>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => fillRandomCard(index)}
+                          className="px-3"
+                          title="Random card"
+                        >
+                          🎲
+                        </Button>
                       </div>
-                      
-                      <Select value={analysisDepth} onValueChange={setAnalysisDepth}>
-                        <SelectTrigger className="w-40 bg-slate-700 border-slate-600 text-white">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="bg-slate-800 border-slate-600">
-                          <SelectItem value="quick">Quick Analysis</SelectItem>
-                          <SelectItem value="standard">Standard</SelectItem>
-                          <SelectItem value="deep">Deep Analysis</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <datalist id={`cards-${index}`}>
+                        {popularCards.map(cardName => (
+                          <option key={cardName} value={cardName} />
+                        ))}
+                      </datalist>
                     </div>
-                  </div>
-                </CardHeader>
-                
-                <CardContent className="space-y-6">
-                  {/* Deck Stats */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-slate-800/30 rounded-lg border border-slate-600">
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-blue-400">{deck.filter(c => c.trim()).length}</p>
-                      <p className="text-sm text-gray-400">Cards</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-purple-400">{getAverageElixir()}</p>
-                      <p className="text-sm text-gray-400">Avg Elixir</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-yellow-400">
-                        {deck.filter(c => c.trim()).length === 8 ? '✓' : '✗'}
-                      </p>
-                      <p className="text-sm text-gray-400">Complete</p>
-                    </div>
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-green-400">
-                        {analysis ? '🧠' : '⏳'}
-                      </p>
-                      <p className="text-sm text-gray-400">Analysis</p>
-                    </div>
-                  </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
 
-                  {/* Visual Deck Builder */}
-                  <div className="bg-slate-800/30 rounded-xl p-6 border border-slate-600">
-                    <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                      <Sparkles className="h-5 w-5 text-purple-400" />
-                      Visual Deck Builder
-                    </h3>
-                    <DeckVisualizer 
-                      deck={deck} 
-                      onCardClick={(index) => {
-                        const input = document.getElementById(`card-${index}`);
-                        input?.focus();
-                      }}
-                    />
-                  </div>
-                  
-                  {/* Card Input Grid */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {deck.map((card, index) => (
-                      <motion.div 
-                        key={index} 
-                        className="space-y-2"
-                        whileHover={{ scale: 1.02 }}
-                      >
-                        <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
-                          <span className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-full w-6 h-6 flex items-center justify-center text-white text-xs font-bold">
-                            {index + 1}
-                          </span>
-                          Card {index + 1}
-                        </label>
-                        <div className="flex gap-2">
-                          <Input
-                            id={`card-${index}`}
-                            placeholder="Enter card name"
-                            value={card}
-                            onChange={(e) => handleCardChange(index, e.target.value)}
-                            list={`cards-${index}`}
-                            className="bg-slate-700/50 border-slate-600 focus:border-purple-500 text-white placeholder-gray-400"
-                          />
+            {/* Quick Add Categories */}
+            <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Zap className="h-5 w-5 text-yellow-500" />
+                  Quick Add by Category
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {Object.entries(cardCategories).map(([category, cards]) => (
+                    <div key={category} className="space-y-2">
+                      <h4 className="font-medium text-slate-700 dark:text-slate-300 text-sm">
+                        {category}
+                      </h4>
+                      <div className="flex flex-wrap gap-1">
+                        {cards.slice(0, 4).map(cardName => (
                           <Button
+                            key={cardName}
                             variant="outline"
                             size="sm"
-                            onClick={() => fillRandomCard(index)}
-                            className="px-3 border-slate-600 hover:border-purple-500 hover:bg-purple-500/20"
-                            title="Random card"
+                            className="text-xs h-8"
+                            onClick={() => {
+                              const emptyIndex = deck.findIndex(c => c.trim() === '');
+                              if (emptyIndex !== -1 && !deck.includes(cardName)) {
+                                handleCardChange(emptyIndex, cardName);
+                              }
+                            }}
                           >
-                            🎲
+                            {cardName}
                           </Button>
-                        </div>
-                        <datalist id={`cards-${index}`}>
-                          {popularCards.map(cardName => (
-                            <option key={cardName} value={cardName} />
-                          ))}
-                        </datalist>
+                        ))}
+                        {cards.length > 4 && (
+                          <Badge variant="secondary" className="text-xs">
+                            +{cards.length - 4}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Action Buttons */}
+            <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+              <CardContent className="p-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                  <Button 
+                    onClick={handleAnalyze} 
+                    disabled={loading || deck.filter(c => c.trim()).length !== 8} 
+                    className="col-span-2 sm:col-span-1 bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    {loading ? (
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        className="mr-2"
+                      >
+                        <Brain className="h-4 w-4" />
                       </motion.div>
-                    ))}
+                    ) : (
+                      <Brain className="h-4 w-4 mr-2" />
+                    )}
+                    {loading ? 'Analyzing...' : 'Analyze Deck'}
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    onClick={randomizeDeck}
+                  >
+                    <Shuffle className="h-4 w-4 mr-2" />
+                    Random
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    onClick={copyDeck}
+                  >
+                    <Copy className="h-4 w-4 mr-2" />
+                    Copy
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    onClick={clearDeck}
+                  >
+                    <RotateCcw className="h-4 w-4 mr-2" />
+                    Clear
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    onClick={() => toast.info('Help feature coming soon!')}
+                  >
+                    <Info className="h-4 w-4 mr-2" />
+                    Help
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Save Deck */}
+            {deck.filter(c => c.trim()).length === 8 && (
+              <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                <CardContent className="p-6">
+                  <div className="flex gap-4">
+                    <Input
+                      placeholder="Enter deck name to save..."
+                      value={deckName}
+                      onChange={(e) => setDeckName(e.target.value)}
+                      className="flex-1"
+                    />
+                    <Button onClick={saveDeck} className="bg-green-600 hover:bg-green-700">
+                      <Save className="h-4 w-4 mr-2" />
+                      Save Deck
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {error && (
+              <Alert className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription className="text-red-800 dark:text-red-200">
+                  {error}
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
+
+          {/* Right Column - Analysis & Meta */}
+          <div className="space-y-6">
+            
+            {/* Analysis Results */}
+            {analysis && (
+              <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Brain className="h-5 w-5 text-blue-500" />
+                    AI Analysis
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                    <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">Win Condition</h4>
+                    <p className="text-blue-800 dark:text-blue-200 text-sm">{analysis.winCondition}</p>
                   </div>
                   
-                  {/* Quick Add Categories */}
-                  <div className="space-y-4">
-                    <h4 className="text-lg font-semibold text-white flex items-center gap-2">
-                      <Zap className="h-5 w-5 text-yellow-400" />
-                      Quick Add by Category
-                    </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {Object.entries(cardCategories).map(([category, cards]) => (
-                        <Card key={category} className="bg-slate-800/30 border-slate-600 hover:border-purple-500/50 transition-colors">
-                          <CardContent className="p-4">
-                            <h5 className="font-semibold text-white mb-2">{category}</h5>
-                            <div className="flex flex-wrap gap-1">
-                              {cards.slice(0, 4).map(cardName => {
-                                const getCardImageUrl = (cardName: string) => {
-                                  const cardNameToId: Record<string, string> = {
-                                    'Cannon': 'cannon',
-                                    'Hog Rider': 'hog-rider',
-                                    'Fireball': 'fireball',
-                                    'Musketeer': 'musketeer',
-                                    'Ice Spirit': 'ice-spirit',
-                                    'Log': 'the-log',
-                                    'Skeletons': 'skeletons',
-                                    'Ice Golem': 'ice-golem',
-                                    'Giant': 'giant',
-                                    'Wizard': 'wizard',
-                                    'Mega Minion': 'mega-minion',
-                                    'Zap': 'zap',
-                                    'Arrows': 'arrows',
-                                    'Knight': 'knight',
-                                    'Archers': 'archers',
-                                    'Goblin Barrel': 'goblin-barrel',
-                                    'Princess': 'princess',
-                                    'Miner': 'miner',
-                                    'Balloon': 'balloon',
-                                    'Lava Hound': 'lava-hound',
-                                    'Golem': 'golem',
-                                    'P.E.K.K.A': 'pekka',
-                                    'Electro Wizard': 'electro-wizard',
-                                    'Bandit': 'bandit',
-                                    'Royal Giant': 'royal-giant',
-                                    'Elite Barbarians': 'elite-barbarians',
-                                    'Sparky': 'sparky',
-                                    'Inferno Dragon': 'inferno-dragon',
-                                    'Lumberjack': 'lumberjack',
-                                    'Ice Wizard': 'ice-wizard',
-                                    'Graveyard': 'graveyard',
-                                    'Tornado': 'tornado',
-                                    'Clone': 'clone',
-                                    'Rage': 'rage',
-                                    'Freeze': 'freeze',
-                                    'Mirror': 'mirror',
-                                    'Poison': 'poison',
-                                    'Lightning': 'lightning',
-                                    'Night Witch': 'night-witch',
-                                    'Baby Dragon': 'baby-dragon',
-                                    'Inferno Tower': 'inferno-tower',
-                                    'Tesla': 'tesla',
-                                    'Bomb Tower': 'bomb-tower',
-                                    'X-Bow': 'x-bow',
-                                    'Mortar': 'mortar',
-                                    'Goblins': 'goblins',
-                                    'Minions': 'minions',
-                                    'Bats': 'bats',
-                                    'Skeleton Army': 'skeleton-army',
-                                    'Giant Skeleton': 'giant-skeleton',
-                                    'Mega Knight': 'mega-knight',
-                                  };
-                                  
-                                  const id = cardNameToId[cardName] || cardName.toLowerCase().replace(/\s+/g, '-');
-                                  return `https://royaleapi.com/static/img/cards-150/${id}.png`;
-                                };
-
-                                return (
-                                  <div
-                                    key={cardName}
-                                    className="cursor-pointer hover:bg-purple-500/20 border border-slate-500 rounded-lg p-1 flex items-center gap-1 text-xs text-gray-300 hover:border-purple-500 transition-colors"
-                                    onClick={() => {
-                                      const emptyIndex = deck.findIndex(c => c.trim() === '');
-                                      if (emptyIndex !== -1 && !deck.includes(cardName)) {
-                                        handleCardChange(emptyIndex, cardName);
-                                      }
-                                    }}
-                                  >
-                                    <div className="relative w-4 h-4 rounded overflow-hidden bg-gray-100 dark:bg-gray-800">
-                                      <img
-                                        src={getCardImageUrl(cardName)}
-                                        alt={cardName}
-                                        className="w-full h-full object-cover"
-                                        onError={(e) => {
-                                          const target = e.target as HTMLImageElement;
-                                          target.style.display = 'none';
-                                          target.parentElement!.innerHTML = '<div class="text-xs flex items-center justify-center h-full">🃏</div>';
-                                        }}
-                                      />
-                                    </div>
-                                    <span className="truncate max-w-20">{cardName}</span>
-                                  </div>
-                                );
-                              })}
-                              {cards.length > 4 && (
-                                <Badge variant="outline" className="border-slate-500 text-gray-400 text-xs">
-                                  +{cards.length - 4}
-                                </Badge>
-                              )}
-                            </div>
-                          </CardContent>
-                        </Card>
+                  <div>
+                    <h4 className="font-medium text-slate-900 dark:text-white mb-2">Strengths</h4>
+                    <ul className="space-y-1">
+                      {analysis.strengths.slice(0, 3).map((strength, index) => (
+                        <li key={index} className="text-sm text-slate-600 dark:text-slate-400 flex items-start gap-2">
+                          <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                          {strength}
+                        </li>
                       ))}
-                    </div>
+                    </ul>
                   </div>
-
-                  {/* Enhanced Action Buttons */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
-                    <Button 
-                      onClick={handleAnalyze} 
-                      disabled={loading || deck.filter(c => c.trim()).length !== 8} 
-                      className="col-span-2 sm:col-span-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white px-4 sm:px-6 py-3 text-sm sm:text-base font-semibold shadow-lg hover:shadow-purple-500/25"
-                    >
-                      {loading ? (
-                        <motion.div
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                          className="mr-2"
-                        >
-                          <Brain className="h-4 w-4 sm:h-5 sm:w-5" />
-                        </motion.div>
-                      ) : (
-                        <Brain className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-                      )}
-                      <span className="hidden sm:inline">{loading ? 'Analyzing...' : 'Analyze Deck'}</span>
-                      <span className="sm:hidden">{loading ? 'Analyzing...' : 'Analyze'}</span>
-                    </Button>
-                    
-                    <Button 
-                      variant="outline" 
-                      onClick={randomizeDeck} 
-                      className="border-slate-600 hover:border-blue-500 hover:bg-blue-500/20 text-white"
-                    >
-                      <Shuffle className="h-4 w-4 mr-1 sm:mr-2" />
-                      <span className="hidden sm:inline">Random</span>
-                      <span className="sm:hidden">🎲</span>
-                    </Button>
-                    
-                    <Button 
-                      variant="outline" 
-                      onClick={shareDeck} 
-                      className="border-slate-600 hover:border-green-500 hover:bg-green-500/20 text-white"
-                    >
-                      <Share2 className="h-4 w-4 mr-1 sm:mr-2" />
-                      <span className="hidden sm:inline">Share</span>
-                      <span className="sm:hidden">📤</span>
-                    </Button>
-                    
-                    <Button 
-                      variant="outline" 
-                      onClick={copyDeck} 
-                      className="border-slate-600 hover:border-cyan-500 hover:bg-cyan-500/20 text-white"
-                    >
-                      <Copy className="h-4 w-4 mr-1 sm:mr-2" />
-                      <span className="hidden sm:inline">Copy</span>
-                      <span className="sm:hidden">📋</span>
-                    </Button>
-                    
-                    <Button 
-                      variant="outline" 
-                      onClick={clearDeck} 
-                      className="border-slate-600 hover:border-red-500 hover:bg-red-500/20 text-white"
-                    >
-                      <RotateCcw className="h-4 w-4 mr-1 sm:mr-2" />
-                      <span className="hidden sm:inline">Clear</span>
-                      <span className="sm:hidden">🗑️</span>
-                    </Button>
-                    
-                    <Button 
-                      variant="outline" 
-                      onClick={() => setShowTutorial(!showTutorial)} 
-                      className="border-slate-600 hover:border-yellow-500 hover:bg-yellow-500/20 text-white"
-                    >
-                      <Lightbulb className="h-4 w-4 mr-1 sm:mr-2" />
-                      <span className="hidden sm:inline">Help</span>
-                      <span className="sm:hidden">💡</span>
-                    </Button>
+                  
+                  <div>
+                    <h4 className="font-medium text-slate-900 dark:text-white mb-2">Weaknesses</h4>
+                    <ul className="space-y-1">
+                      {analysis.weaknesses.slice(0, 3).map((weakness, index) => (
+                        <li key={index} className="text-sm text-slate-600 dark:text-slate-400 flex items-start gap-2">
+                          <AlertTriangle className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+                          {weakness}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-
-                  {/* Save Deck */}
-                  {deck.filter(c => c.trim()).length === 8 && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="flex gap-4 p-4 bg-slate-800/30 rounded-lg border border-slate-600"
-                    >
-                      <Input
-                        placeholder="Enter deck name to save..."
-                        value={deckName}
-                        onChange={(e) => setDeckName(e.target.value)}
-                        className="flex-1 bg-slate-700 border-slate-600 text-white"
-                      />
-                      <Button onClick={saveDeck} className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500">
-                        <Save className="h-4 w-4 mr-2" />
-                        Save Deck
-                      </Button>
-                    </motion.div>
-                  )}
-
-                  {error && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg"
-                    >
-                      <p className="text-red-400 flex items-center gap-2">
-                        <AlertTriangle className="h-4 w-4" />
-                        {error}
-                      </p>
-                    </motion.div>
-                  )}
                 </CardContent>
               </Card>
-            </TabsContent>
+            )}
 
-            {/* Meta Decks Tab */}
-            <TabsContent value="meta" className="space-y-6">
-              <Card className="bg-slate-800/50 border-slate-600">
+            {/* Meta Decks */}
+            <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Crown className="h-5 w-5 text-yellow-500" />
+                  Meta Decks
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {metaDecks.map((metaDeck, index) => (
+                  <div key={index} className="p-4 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-medium text-slate-900 dark:text-white">{metaDeck.name}</h4>
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1">
+                          <Star className="h-4 w-4 text-yellow-500" />
+                          <span className="text-sm text-slate-600 dark:text-slate-400">{metaDeck.rating}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Trophy className="h-4 w-4 text-green-500" />
+                          <span className="text-sm text-slate-600 dark:text-slate-400">{metaDeck.winRate}%</span>
+                        </div>
+                      </div>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => loadMetaDeck(metaDeck.cards)}
+                      className="w-full"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Load Deck
+                    </Button>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Saved Decks */}
+            {savedDecks.length > 0 && (
+              <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-white">
-                    <Crown className="h-5 w-5 text-yellow-400" />
-                    Meta Deck Library
+                  <CardTitle className="text-lg font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                    <Save className="h-5 w-5 text-green-500" />
+                    Saved Decks
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {metaDecks.map((metaDeck, index) => (
-                      <motion.div
-                        key={index}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        whileHover={{ scale: 1.02 }}
-                      >
-                        <Card className="bg-slate-700/50 border-slate-600 hover:border-purple-500/50 transition-colors cursor-pointer group">
-                          <CardContent className="p-6">
-                            <div className="flex items-start justify-between mb-4">
-                              <div>
-                                <h3 className="text-xl font-bold text-white mb-2">{metaDeck.name}</h3>
-                                <div className="flex items-center gap-4">
-                                  <div className="flex items-center gap-1">
-                                    <Star className="h-4 w-4 text-yellow-400" />
-                                    <span className="text-yellow-400 font-medium">{metaDeck.rating}</span>
-                                  </div>
-                                  <div className="flex items-center gap-1">
-                                    <Trophy className="h-4 w-4 text-green-400" />
-                                    <span className="text-green-400 font-medium">{metaDeck.winRate}%</span>
-                                  </div>
-                                </div>
-                              </div>
-                              
-                              <Button
-                                onClick={() => loadMetaDeck(metaDeck.cards)}
-                                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500"
-                              >
-                                <Download className="h-4 w-4 mr-2" />
-                                Load
-                              </Button>
-                            </div>
-                            
-                            <div className="grid grid-cols-4 gap-2">
-                              {metaDeck.cards.slice(0, 8).map((cardName, cardIndex) => {
-                                const getCardImageUrl = (cardName: string) => {
-                                  const cardNameToId: Record<string, string> = {
-                                    'Cannon': 'cannon',
-                                    'Hog Rider': 'hog-rider',
-                                    'Fireball': 'fireball',
-                                    'Musketeer': 'musketeer',
-                                    'Ice Spirit': 'ice-spirit',
-                                    'Log': 'the-log',
-                                    'Skeletons': 'skeletons',
-                                    'Ice Golem': 'ice-golem',
-                                    'Giant': 'giant',
-                                    'Wizard': 'wizard',
-                                    'Mega Minion': 'mega-minion',
-                                    'Zap': 'zap',
-                                    'Arrows': 'arrows',
-                                    'Knight': 'knight',
-                                    'Archers': 'archers',
-                                    'Goblin Barrel': 'goblin-barrel',
-                                    'Princess': 'princess',
-                                    'Miner': 'miner',
-                                    'Balloon': 'balloon',
-                                    'Lava Hound': 'lava-hound',
-                                    'Golem': 'golem',
-                                    'P.E.K.K.A': 'pekka',
-                                    'Electro Wizard': 'electro-wizard',
-                                    'Bandit': 'bandit',
-                                    'Royal Giant': 'royal-giant',
-                                    'Elite Barbarians': 'elite-barbarians',
-                                    'Sparky': 'sparky',
-                                    'Inferno Dragon': 'inferno-dragon',
-                                    'Lumberjack': 'lumberjack',
-                                    'Ice Wizard': 'ice-wizard',
-                                    'Graveyard': 'graveyard',
-                                    'Tornado': 'tornado',
-                                    'Clone': 'clone',
-                                    'Rage': 'rage',
-                                    'Freeze': 'freeze',
-                                    'Mirror': 'mirror',
-                                    'Poison': 'poison',
-                                    'Lightning': 'lightning',
-                                    'Night Witch': 'night-witch',
-                                    'Baby Dragon': 'baby-dragon',
-                                  };
-                                  
-                                  const id = cardNameToId[cardName] || cardName.toLowerCase().replace(/\s+/g, '-');
-                                  return `https://royaleapi.com/static/img/cards-150/${id}.png`;
-                                };
-
-                                return (
-                                  <div key={cardIndex} className="bg-slate-800/50 rounded-lg p-2 text-center border border-slate-600">
-                                    <div className="relative w-12 h-12 mx-auto mb-1 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
-                                      <img
-                                        src={getCardImageUrl(cardName)}
-                                        alt={cardName}
-                                        className="w-full h-full object-cover"
-                                        onError={(e) => {
-                                          const target = e.target as HTMLImageElement;
-                                          target.style.display = 'none';
-                                          target.parentElement!.innerHTML = '<div class="text-2xl flex items-center justify-center h-full">🃏</div>';
-                                        }}
-                                      />
-                                    </div>
-                                    <p className="text-xs text-gray-300 truncate">{cardName}</p>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </motion.div>
-                    ))}
-                  </div>
+                <CardContent className="space-y-3">
+                  {savedDecks.slice(0, 3).map((savedDeck) => (
+                    <div key={savedDeck.id} className="p-3 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-medium text-slate-900 dark:text-white text-sm">{savedDeck.name}</h4>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">
+                            {savedDeck.createdAt.toLocaleDateString()}
+                          </p>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setDeck(savedDeck.cards);
+                            if (savedDeck.analysis) setAnalysis(savedDeck.analysis);
+                            toast.success('Deck loaded!');
+                          }}
+                        >
+                          <Upload className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
                 </CardContent>
               </Card>
-            </TabsContent>
-
-            {/* Analysis Tab */}
-            <TabsContent value="analysis" className="space-y-6">
-              {analysis ? (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="space-y-6"
-                >
-                  {/* Analysis Header */}
-                  <Card className="bg-gradient-to-br from-purple-900/50 to-pink-900/50 border-purple-500/30">
-                    <CardContent className="p-8">
-                      <div className="text-center">
-                        <motion.div
-                          animate={{ scale: [1, 1.1, 1] }}
-                          transition={{ duration: 2, repeat: Infinity }}
-                          className="inline-block mb-4"
-                        >
-                          <Brain className="h-16 w-16 text-purple-400" />
-                        </motion.div>
-                        <h2 className="text-3xl font-bold text-white mb-4">AI Analysis Complete</h2>
-                        <p className="text-xl text-purple-300">{analysis.winCondition}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-
-                  {/* Detailed Analysis */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Strengths */}
-                    <Card className="bg-slate-800/50 border-green-500/30">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-white">
-                          <Shield className="h-5 w-5 text-green-400" />
-                          Strengths
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-3">
-                          {analysis.strengths.map((strength, index) => (
-                            <motion.div
-                              key={index}
-                              initial={{ opacity: 0, x: -20 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: index * 0.1 }}
-                              className="flex items-start gap-3 p-3 bg-green-500/10 rounded-lg border border-green-500/20"
-                            >
-                              <div className="bg-green-500 rounded-full p-1 mt-1">
-                                <span className="text-white text-xs">✓</span>
-                              </div>
-                              <p className="text-gray-300 leading-relaxed">{strength}</p>
-                            </motion.div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    {/* Weaknesses */}
-                    <Card className="bg-slate-800/50 border-red-500/30">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-white">
-                          <Swords className="h-5 w-5 text-red-400" />
-                          Weaknesses
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-3">
-                          {analysis.weaknesses.map((weakness, index) => (
-                            <motion.div
-                              key={index}
-                              initial={{ opacity: 0, x: -20 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: index * 0.1 }}
-                              className="flex items-start gap-3 p-3 bg-red-500/10 rounded-lg border border-red-500/20"
-                            >
-                              <div className="bg-red-500 rounded-full p-1 mt-1">
-                                <span className="text-white text-xs">!</span>
-                              </div>
-                              <p className="text-gray-300 leading-relaxed">{weakness}</p>
-                            </motion.div>
-                          ))}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  {/* Strategy & Tips */}
-                  <Card className="bg-slate-800/50 border-blue-500/30">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2 text-white">
-                        <TrendingUp className="h-5 w-5 text-blue-400" />
-                        Strategy & Pro Tips
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                      <div className="p-4 bg-blue-500/10 rounded-lg border border-blue-500/20">
-                        <h4 className="font-semibold text-blue-400 mb-2">Overall Strategy</h4>
-                        <p className="text-gray-300 leading-relaxed">{analysis.strategy}</p>
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {analysis.tips.map((tip, index) => (
-                          <motion.div
-                            key={index}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                            className="p-4 bg-slate-700/50 rounded-lg border border-slate-600 hover:border-purple-500/50 transition-colors"
-                          >
-                            <div className="flex items-start gap-3">
-                              <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-full w-8 h-8 flex items-center justify-center text-white font-bold text-sm">
-                                {index + 1}
-                              </div>
-                              <p className="text-gray-300 leading-relaxed">{tip}</p>
-                            </div>
-                          </motion.div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ) : (
-                <div className="text-center py-20">
-                  <motion.div
-                    animate={{ 
-                      scale: [1, 1.1, 1],
-                      rotate: [0, 5, -5, 0] 
-                    }}
-                    transition={{ 
-                      duration: 4, 
-                      repeat: Infinity,
-                      ease: "easeInOut" 
-                    }}
-                  >
-                    <Brain className="h-24 w-24 mx-auto text-purple-400 opacity-50 mb-6" />
-                  </motion.div>
-                  <h3 className="text-3xl font-bold text-white mb-4">Ready for AI Analysis</h3>
-                  <p className="text-xl text-gray-400 max-w-2xl mx-auto">
-                    Build your deck and get expert-level strategic insights powered by advanced AI.
-                  </p>
-                </div>
-              )}
-            </TabsContent>
-
-            {/* Saved Decks Tab */}
-            <TabsContent value="saved" className="space-y-6">
-              <Card className="bg-slate-800/50 border-slate-600">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-white">
-                    <Save className="h-5 w-5 text-green-400" />
-                    Your Saved Decks
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {savedDecks.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {savedDecks.map((savedDeck) => (
-                        <motion.div
-                          key={savedDeck.id}
-                          initial={{ opacity: 0, scale: 0.95 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          whileHover={{ scale: 1.02 }}
-                        >
-                          <Card className="bg-slate-700/50 border-slate-600 hover:border-purple-500/50 transition-colors">
-                            <CardContent className="p-6">
-                              <div className="flex items-start justify-between mb-4">
-                                <div>
-                                  <h3 className="text-lg font-bold text-white mb-1">{savedDeck.name}</h3>
-                                  <p className="text-sm text-gray-400">
-                                    Saved {savedDeck.createdAt.toLocaleDateString()}
-                                  </p>
-                                  {savedDeck.rating && (
-                                    <div className="flex items-center gap-1 mt-1">
-                                      <Star className="h-4 w-4 text-yellow-400" />
-                                      <span className="text-yellow-400">{savedDeck.rating}/5</span>
-                                    </div>
-                                  )}
-                                </div>
-                                
-                                <Button
-                                  size="sm"
-                                  onClick={() => {
-                                    setDeck(savedDeck.cards);
-                                    if (savedDeck.analysis) setAnalysis(savedDeck.analysis);
-                                    setActiveTab('builder');
-                                    toast.success('Deck loaded!');
-                                  }}
-                                  className="bg-gradient-to-r from-blue-600 to-purple-600"
-                                >
-                                  <Upload className="h-4 w-4 mr-1" />
-                                  Load
-                                </Button>
-                              </div>
-                              
-                              <div className="grid grid-cols-4 gap-2">
-                                {savedDeck.cards.map((cardName, cardIndex) => (
-                                  <div key={cardIndex} className="bg-slate-800/50 rounded p-2 text-center border border-slate-600">
-                                    <div className="text-lg mb-1">🃏</div>
-                                    <p className="text-xs text-gray-300 truncate">{cardName}</p>
-                                  </div>
-                                ))}
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </motion.div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-12">
-                      <Save className="h-16 w-16 mx-auto text-gray-500 mb-4" />
-                      <h3 className="text-xl font-bold text-white mb-2">No Saved Decks</h3>
-                      <p className="text-gray-400">Build and save your first deck to see it here!</p>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+            )}
+          </div>
         </div>
       </div>
     </div>
