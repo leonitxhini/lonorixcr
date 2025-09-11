@@ -48,15 +48,6 @@ interface DeckStats {
   balanceScore: number;
 }
 
-interface LiveMatch {
-  id: string;
-  player1: string;
-  player2: string;
-  deck1: string[];
-  deck2: string[];
-  status: 'live' | 'finished';
-  winner?: string;
-}
 
 export default function DeckCoach() {
   const [deck, setDeck] = useState<string[]>(Array(8).fill(''));
@@ -72,7 +63,6 @@ export default function DeckCoach() {
   
   // Neue coole Features
   const [deckStats, setDeckStats] = useState<DeckStats | null>(null);
-  const [liveMatches, setLiveMatches] = useState<LiveMatch[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -88,8 +78,12 @@ export default function DeckCoach() {
   const [selectedDeck, setSelectedDeck] = useState<SavedDeck | null>(null);
   const [deckComparison, setDeckComparison] = useState<SavedDeck[]>([]);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [showLiveStats, setShowLiveStats] = useState(true);
+  const [showLiveStats, setShowLiveStats] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [showDeckPreview, setShowDeckPreview] = useState(true);
+  const [showCardSuggestions, setShowCardSuggestions] = useState(true);
+  const [deckTheme, setDeckTheme] = useState('default');
+  const [showAnimations, setShowAnimations] = useState(true);
 
   const popularCards = [
     'Hog Rider', 'Fireball', 'Musketeer', 'Ice Spirit', 'Cannon', 'Log', 'Skeletons', 'Ice Golem',
@@ -285,28 +279,6 @@ export default function DeckCoach() {
     };
   };
 
-  const simulateLiveMatches = () => {
-    const matches: LiveMatch[] = [
-      {
-        id: '1',
-        player1: 'ProPlayer1',
-        player2: 'ProPlayer2',
-        deck1: ['Hog Rider', 'Fireball', 'Musketeer', 'Ice Spirit', 'Cannon', 'Log', 'Skeletons', 'Ice Golem'],
-        deck2: ['Giant', 'Wizard', 'Mega Minion', 'Zap', 'Arrows', 'Knight', 'Archers', 'Musketeer'],
-        status: 'live'
-      },
-      {
-        id: '2',
-        player1: 'TopPlayer',
-        player2: 'Champion',
-        deck1: ['Balloon', 'Lava Hound', 'Mega Minion', 'Zap', 'Arrows', 'Knight', 'Archers', 'Musketeer'],
-        deck2: ['Golem', 'Mega Minion', 'Zap', 'Lightning', 'Night Witch', 'Baby Dragon', 'Lumber Jack', 'Tornado'],
-        status: 'finished',
-        winner: 'TopPlayer'
-      }
-    ];
-    setLiveMatches(matches);
-  };
 
   const shareDeck = async () => {
     if (navigator.share) {
@@ -342,11 +314,8 @@ export default function DeckCoach() {
   };
 
   useEffect(() => {
-    simulateLiveMatches();
-    const interval = setInterval(() => {
-      setNotificationCount(prev => Math.min(prev + 1, 99));
-    }, 30000);
-    return () => clearInterval(interval);
+    // Initialize any necessary data
+    console.log('Deck Coach initialized');
   }, []);
 
   useEffect(() => {
@@ -430,15 +399,26 @@ export default function DeckCoach() {
             </div>
             
             <div className="flex items-center gap-2">
-              {/* Live Stats Toggle */}
+              {/* Deck Preview Toggle */}
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setShowLiveStats(!showLiveStats)}
-                className={`${showLiveStats ? 'bg-green-500/20 text-green-400' : 'text-gray-400'} hover:bg-green-500/20`}
+                onClick={() => setShowDeckPreview(!showDeckPreview)}
+                className={`${showDeckPreview ? 'bg-purple-500/20 text-purple-400' : 'text-gray-400'} hover:bg-purple-500/20`}
               >
-                <div className={`w-2 h-2 rounded-full mr-2 ${showLiveStats ? 'bg-green-400 animate-pulse' : 'bg-gray-500'}`} />
-                Live Stats
+                <Eye className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Preview</span>
+              </Button>
+              
+              {/* Card Suggestions Toggle */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowCardSuggestions(!showCardSuggestions)}
+                className={`${showCardSuggestions ? 'bg-blue-500/20 text-blue-400' : 'text-gray-400'} hover:bg-blue-500/20`}
+              >
+                <Lightbulb className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Suggestions</span>
               </Button>
               
               {/* Sound Toggle */}
@@ -446,7 +426,7 @@ export default function DeckCoach() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setSoundEnabled(!soundEnabled)}
-                className={`${soundEnabled ? 'text-blue-400' : 'text-gray-400'} hover:bg-blue-500/20`}
+                className={`${soundEnabled ? 'text-green-400' : 'text-gray-400'} hover:bg-green-500/20`}
               >
                 {soundEnabled ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
               </Button>
@@ -475,76 +455,6 @@ export default function DeckCoach() {
         </div>
       </div>
 
-      {/* Live Stats Sidebar */}
-      {showLiveStats && (
-        <motion.div
-          initial={{ x: -300, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          exit={{ x: -300, opacity: 0 }}
-          className="fixed left-0 top-16 bottom-0 w-80 bg-slate-900/95 backdrop-blur-xl border-r border-purple-500/30 z-30 overflow-y-auto"
-        >
-          <div className="p-4">
-            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-              Live Pro Matches
-            </h3>
-            
-            <div className="space-y-4">
-              {liveMatches.map((match) => (
-                <Card key={match.id} className="bg-slate-800/50 border-slate-600">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <Badge className={`${match.status === 'live' ? 'bg-red-500' : 'bg-gray-500'} text-white`}>
-                        {match.status === 'live' ? 'LIVE' : 'FINISHED'}
-                      </Badge>
-                      {match.winner && (
-                        <Badge className="bg-yellow-500 text-black">
-                          Winner: {match.winner}
-                        </Badge>
-                      )}
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-white font-medium">{match.player1}</span>
-                        <span className="text-gray-400">vs</span>
-                        <span className="text-white font-medium">{match.player2}</span>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="text-xs text-gray-400">
-                          {match.deck1.slice(0, 3).join(', ')}...
-                        </div>
-                        <div className="text-xs text-gray-400">
-                          {match.deck2.slice(0, 3).join(', ')}...
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-            
-            <div className="mt-6 p-4 bg-slate-800/30 rounded-lg border border-slate-600">
-              <h4 className="text-white font-medium mb-2">Global Stats</h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between text-gray-300">
-                  <span>Active Players:</span>
-                  <span className="text-green-400">2.4M</span>
-                </div>
-                <div className="flex justify-between text-gray-300">
-                  <span>Matches Today:</span>
-                  <span className="text-blue-400">156K</span>
-                </div>
-                <div className="flex justify-between text-gray-300">
-                  <span>Top Deck:</span>
-                  <span className="text-purple-400">Hog Cycle</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      )}
 
       {/* Advanced Settings Panel */}
       {showAdvanced && (
@@ -596,6 +506,48 @@ export default function DeckCoach() {
                   <SelectItem value="deep">Deep Analysis</SelectItem>
                 </SelectContent>
               </Select>
+            </div>
+            
+            <div>
+              <label className="text-gray-300 text-sm">Deck Theme</label>
+              <Select value={deckTheme} onValueChange={setDeckTheme}>
+                <SelectTrigger className="bg-slate-700 border-slate-600 text-white mt-1">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-800 border-slate-600">
+                  <SelectItem value="default">Default</SelectItem>
+                  <SelectItem value="dark">Dark Mode</SelectItem>
+                  <SelectItem value="neon">Neon</SelectItem>
+                  <SelectItem value="royal">Royal</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <span className="text-gray-300">Show Animations</span>
+              <Switch
+                checked={showAnimations}
+                onCheckedChange={setShowAnimations}
+                className="data-[state=checked]:bg-purple-600"
+              />
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <span className="text-gray-300">Deck Preview</span>
+              <Switch
+                checked={showDeckPreview}
+                onCheckedChange={setShowDeckPreview}
+                className="data-[state=checked]:bg-purple-600"
+              />
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <span className="text-gray-300">Card Suggestions</span>
+              <Switch
+                checked={showCardSuggestions}
+                onCheckedChange={setShowCardSuggestions}
+                className="data-[state=checked]:bg-purple-600"
+              />
             </div>
           </div>
         </motion.div>
@@ -665,7 +617,97 @@ export default function DeckCoach() {
         </motion.div>
       )}
 
-      <div className={`relative z-10 py-6 sm:py-8 px-4 sm:px-6 lg:px-8 ${showLiveStats ? 'ml-80' : ''}`}>
+      {/* Card Suggestions Panel */}
+      {showCardSuggestions && (
+        <motion.div
+          initial={{ x: 300, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          exit={{ x: 300, opacity: 0 }}
+          className="fixed right-0 top-16 bottom-0 w-80 bg-slate-900/95 backdrop-blur-xl border-l border-blue-500/30 z-30 overflow-y-auto"
+        >
+          <div className="p-4">
+            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <Lightbulb className="h-5 w-5 text-blue-400" />
+              Smart Card Suggestions
+            </h3>
+            
+            <div className="space-y-4">
+              <Card className="bg-slate-800/50 border-slate-600">
+                <CardContent className="p-4">
+                  <h4 className="text-white font-medium mb-3">Missing Card Types</h4>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 p-2 bg-red-500/10 rounded border border-red-500/20">
+                      <AlertTriangle className="h-4 w-4 text-red-400" />
+                      <span className="text-sm text-gray-300">No Win Condition</span>
+                    </div>
+                    <div className="flex items-center gap-2 p-2 bg-yellow-500/10 rounded border border-yellow-500/20">
+                      <AlertTriangle className="h-4 w-4 text-yellow-400" />
+                      <span className="text-sm text-gray-300">No Air Defense</span>
+                    </div>
+                    <div className="flex items-center gap-2 p-2 bg-blue-500/10 rounded border border-blue-500/20">
+                      <AlertTriangle className="h-4 w-4 text-blue-400" />
+                      <span className="text-sm text-gray-300">No Spells</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-slate-800/50 border-slate-600">
+                <CardContent className="p-4">
+                  <h4 className="text-white font-medium mb-3">Recommended Cards</h4>
+                  <div className="space-y-2">
+                    {['Hog Rider', 'Fireball', 'Musketeer', 'Ice Spirit'].map((card, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center gap-3 p-2 bg-slate-700/50 rounded hover:bg-slate-600/50 cursor-pointer transition-colors"
+                        onClick={() => {
+                          const emptyIndex = deck.findIndex(c => c.trim() === '');
+                          if (emptyIndex !== -1 && !deck.includes(card)) {
+                            handleCardChange(emptyIndex, card);
+                            toast.success(`Added ${card} to your deck!`);
+                          }
+                        }}
+                      >
+                        <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded flex items-center justify-center text-white text-xs font-bold">
+                          {index + 1}
+                        </div>
+                        <span className="text-sm text-gray-300">{card}</span>
+                        <Badge className="ml-auto bg-green-500/20 text-green-400 border-green-500/30">
+                          +Add
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card className="bg-slate-800/50 border-slate-600">
+                <CardContent className="p-4">
+                  <h4 className="text-white font-medium mb-3">Deck Balance</h4>
+                  <div className="space-y-3">
+                    <div>
+                      <div className="flex justify-between text-sm text-gray-300 mb-1">
+                        <span>Elixir Cost</span>
+                        <span>{getAverageElixir()}</span>
+                      </div>
+                      <Progress value={parseFloat(String(getAverageElixir())) * 10} className="h-2" />
+                    </div>
+                    <div>
+                      <div className="flex justify-between text-sm text-gray-300 mb-1">
+                        <span>Card Types</span>
+                        <span>{deck.filter(c => c.trim()).length}/8</span>
+                      </div>
+                      <Progress value={(deck.filter(c => c.trim()).length / 8) * 100} className="h-2" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      <div className={`relative z-10 py-6 sm:py-8 px-4 sm:px-6 lg:px-8 ${showCardSuggestions ? 'mr-80' : ''}`}>
         <div className="max-w-7xl mx-auto">
           {/* Hero Section */}
           <motion.div
