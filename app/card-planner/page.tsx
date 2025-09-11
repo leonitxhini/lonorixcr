@@ -627,7 +627,7 @@ export default function CardPlanner() {
                             layout
                           >
                             <Card className={`bg-gradient-to-br from-slate-800/80 to-slate-700/80 backdrop-blur-xl border-2 border-transparent hover:border-blue-500/50 shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden group`}>
-                              <div className={`absolute inset-0 bg-gradient-to-br ${getRarityColor(card.rarity)} opacity-10 group-hover:opacity-20 transition-opacity`} />
+                              <div className={`absolute inset-0 bg-gradient-to-br ${card.rarity === 'common' ? 'from-gray-400 to-gray-600' : card.rarity === 'rare' ? 'from-orange-400 to-orange-600' : card.rarity === 'epic' ? 'from-purple-400 to-purple-600' : 'from-yellow-400 to-yellow-600'} opacity-10 group-hover:opacity-20 transition-opacity`} />
                               
                               <CardContent className="p-6 relative z-10">
                                 <div className="flex items-start justify-between mb-4">
@@ -710,7 +710,7 @@ export default function CardPlanner() {
                               className="flex items-center gap-4 p-4 bg-slate-700/50 rounded-lg border border-slate-600 hover:border-blue-500/50 transition-colors"
                             >
                               <div className="flex items-center gap-3 min-w-0 flex-1">
-                                <Badge className={`bg-${priorityColor}-500 text-white font-bold px-3 py-1`}>
+                                <Badge className={`${priorityColor === 'red' ? 'bg-red-500' : priorityColor === 'yellow' ? 'bg-yellow-500' : 'bg-green-500'} text-white font-bold px-3 py-1`}>
                                   #{index + 1}
                                 </Badge>
                                 <div className="min-w-0 flex-1">
@@ -728,7 +728,7 @@ export default function CardPlanner() {
                                 </p>
                               </div>
                               
-                              <Badge variant="outline" className={`text-${priorityColor}-400 border-${priorityColor}-400`}>
+                              <Badge variant="outline" className={`${priorityColor === 'red' ? 'text-red-400 border-red-400' : priorityColor === 'yellow' ? 'text-yellow-400 border-yellow-400' : 'text-green-400 border-green-400'}`}>
                                 {priority}
                               </Badge>
                             </motion.div>
