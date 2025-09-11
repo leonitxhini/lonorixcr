@@ -354,22 +354,93 @@ export default function DeckCoach() {
                         {category}
                       </h4>
                       <div className="flex flex-wrap gap-1">
-                        {cards.slice(0, 4).map(cardName => (
-                          <Button
-                            key={cardName}
-                            variant="outline"
-                            size="sm"
-                            className="text-xs h-8"
-                            onClick={() => {
-                              const emptyIndex = deck.findIndex(c => c.trim() === '');
-                              if (emptyIndex !== -1 && !deck.includes(cardName)) {
-                                handleCardChange(emptyIndex, cardName);
-                              }
-                            }}
-                          >
-                            {cardName}
-                          </Button>
-                        ))}
+                        {cards.slice(0, 4).map(cardName => {
+                          const getCardImageUrl = (cardName: string) => {
+                            const cardNameToId: Record<string, string> = {
+                              'Cannon': 'cannon',
+                              'Hog Rider': 'hog-rider',
+                              'Fireball': 'fireball',
+                              'Musketeer': 'musketeer',
+                              'Ice Spirit': 'ice-spirit',
+                              'Log': 'the-log',
+                              'Skeletons': 'skeletons',
+                              'Ice Golem': 'ice-golem',
+                              'Giant': 'giant',
+                              'Wizard': 'wizard',
+                              'Mega Minion': 'mega-minion',
+                              'Zap': 'zap',
+                              'Arrows': 'arrows',
+                              'Knight': 'knight',
+                              'Archers': 'archers',
+                              'Goblin Barrel': 'goblin-barrel',
+                              'Princess': 'princess',
+                              'Miner': 'miner',
+                              'Balloon': 'balloon',
+                              'Lava Hound': 'lava-hound',
+                              'Golem': 'golem',
+                              'P.E.K.K.A': 'pekka',
+                              'Electro Wizard': 'electro-wizard',
+                              'Bandit': 'bandit',
+                              'Royal Giant': 'royal-giant',
+                              'Elite Barbarians': 'elite-barbarians',
+                              'Sparky': 'sparky',
+                              'Inferno Dragon': 'inferno-dragon',
+                              'Lumberjack': 'lumberjack',
+                              'Ice Wizard': 'ice-wizard',
+                              'Graveyard': 'graveyard',
+                              'Tornado': 'tornado',
+                              'Clone': 'clone',
+                              'Rage': 'rage',
+                              'Freeze': 'freeze',
+                              'Mirror': 'mirror',
+                              'Poison': 'poison',
+                              'Lightning': 'lightning',
+                              'Night Witch': 'night-witch',
+                              'Baby Dragon': 'baby-dragon',
+                              'Inferno Tower': 'inferno-tower',
+                              'Tesla': 'tesla',
+                              'Bomb Tower': 'bomb-tower',
+                              'X-Bow': 'x-bow',
+                              'Mortar': 'mortar',
+                              'Goblins': 'goblins',
+                              'Minions': 'minions',
+                              'Bats': 'bats',
+                              'Skeleton Army': 'skeleton-army',
+                              'Giant Skeleton': 'giant-skeleton',
+                              'Mega Knight': 'mega-knight',
+                            };
+                            
+                            const id = cardNameToId[cardName] || cardName.toLowerCase().replace(/\s+/g, '-');
+                            return `https://royaleapi.com/static/img/cards-150/${id}.png`;
+                          };
+
+                          return (
+                            <div
+                              key={cardName}
+                              className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg p-1 flex items-center gap-1 text-xs text-slate-600 dark:text-slate-300 hover:border-blue-300 dark:hover:border-blue-500 transition-colors"
+                              onClick={() => {
+                                const emptyIndex = deck.findIndex(c => c.trim() === '');
+                                if (emptyIndex !== -1 && !deck.includes(cardName)) {
+                                  handleCardChange(emptyIndex, cardName);
+                                }
+                              }}
+                            >
+                              <div className="relative w-4 h-4 rounded overflow-hidden bg-gray-100 dark:bg-gray-800">
+                                <img
+                                  src={getCardImageUrl(cardName)}
+                                  alt={cardName}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    const target = e.target as HTMLImageElement;
+                                    target.style.display = 'none';
+                                    target.parentElement!.innerHTML = '<div class="text-xs flex items-center justify-center h-full">🃏</div>';
+                                  }}
+                                />
+                              </div>
+                              <span className="truncate max-w-20">{cardName}</span>
+                            </div>
+                          );
+                        })}
                         {cards.length > 4 && (
                           <Badge variant="secondary" className="text-xs">
                             +{cards.length - 4}
@@ -526,7 +597,7 @@ export default function DeckCoach() {
               <CardContent className="space-y-4">
                 {metaDecks.map((metaDeck, index) => (
                   <div key={index} className="p-4 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center justify-between mb-3">
                       <h4 className="font-medium text-slate-900 dark:text-white">{metaDeck.name}</h4>
                       <div className="flex items-center gap-2">
                         <div className="flex items-center gap-1">
@@ -539,6 +610,78 @@ export default function DeckCoach() {
                         </div>
                       </div>
                     </div>
+                    
+                    {/* Deck Cards Preview */}
+                    <div className="grid grid-cols-4 gap-1 mb-3">
+                      {metaDeck.cards.slice(0, 8).map((cardName, cardIndex) => {
+                        const getCardImageUrl = (cardName: string) => {
+                          const cardNameToId: Record<string, string> = {
+                            'Cannon': 'cannon',
+                            'Hog Rider': 'hog-rider',
+                            'Fireball': 'fireball',
+                            'Musketeer': 'musketeer',
+                            'Ice Spirit': 'ice-spirit',
+                            'Log': 'the-log',
+                            'Skeletons': 'skeletons',
+                            'Ice Golem': 'ice-golem',
+                            'Giant': 'giant',
+                            'Wizard': 'wizard',
+                            'Mega Minion': 'mega-minion',
+                            'Zap': 'zap',
+                            'Arrows': 'arrows',
+                            'Knight': 'knight',
+                            'Archers': 'archers',
+                            'Goblin Barrel': 'goblin-barrel',
+                            'Princess': 'princess',
+                            'Miner': 'miner',
+                            'Balloon': 'balloon',
+                            'Lava Hound': 'lava-hound',
+                            'Golem': 'golem',
+                            'P.E.K.K.A': 'pekka',
+                            'Electro Wizard': 'electro-wizard',
+                            'Bandit': 'bandit',
+                            'Royal Giant': 'royal-giant',
+                            'Elite Barbarians': 'elite-barbarians',
+                            'Sparky': 'sparky',
+                            'Inferno Dragon': 'inferno-dragon',
+                            'Lumberjack': 'lumberjack',
+                            'Ice Wizard': 'ice-wizard',
+                            'Graveyard': 'graveyard',
+                            'Tornado': 'tornado',
+                            'Clone': 'clone',
+                            'Rage': 'rage',
+                            'Freeze': 'freeze',
+                            'Mirror': 'mirror',
+                            'Poison': 'poison',
+                            'Lightning': 'lightning',
+                            'Night Witch': 'night-witch',
+                            'Baby Dragon': 'baby-dragon',
+                          };
+                          
+                          const id = cardNameToId[cardName] || cardName.toLowerCase().replace(/\s+/g, '-');
+                          return `https://royaleapi.com/static/img/cards-150/${id}.png`;
+                        };
+
+                        return (
+                          <div key={cardIndex} className="bg-slate-100 dark:bg-slate-700 rounded p-1 text-center border border-slate-200 dark:border-slate-600">
+                            <div className="relative w-8 h-8 mx-auto mb-1 rounded overflow-hidden bg-gray-100 dark:bg-gray-800">
+                              <img
+                                src={getCardImageUrl(cardName)}
+                                alt={cardName}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  const target = e.target as HTMLImageElement;
+                                  target.style.display = 'none';
+                                  target.parentElement!.innerHTML = '<div class="text-xs flex items-center justify-center h-full">🃏</div>';
+                                }}
+                              />
+                            </div>
+                            <p className="text-xs text-slate-600 dark:text-slate-300 truncate">{cardName}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    
                     <Button
                       size="sm"
                       variant="outline"
@@ -565,7 +708,7 @@ export default function DeckCoach() {
                 <CardContent className="space-y-3">
                   {savedDecks.slice(0, 3).map((savedDeck) => (
                     <div key={savedDeck.id} className="p-3 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between mb-2">
                         <div>
                           <h4 className="font-medium text-slate-900 dark:text-white text-sm">{savedDeck.name}</h4>
                           <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -583,6 +726,16 @@ export default function DeckCoach() {
                         >
                           <Upload className="h-3 w-3" />
                         </Button>
+                      </div>
+                      
+                      {/* Deck Cards Preview */}
+                      <div className="grid grid-cols-4 gap-1">
+                        {savedDeck.cards.map((cardName, cardIndex) => (
+                          <div key={cardIndex} className="bg-slate-100 dark:bg-slate-700 rounded p-1 text-center border border-slate-200 dark:border-slate-600">
+                            <div className="text-lg mb-1">🃏</div>
+                            <p className="text-xs text-slate-600 dark:text-slate-300 truncate">{cardName}</p>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   ))}
